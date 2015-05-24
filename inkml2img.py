@@ -5,7 +5,7 @@ from os.path import isfile, join
 from tex2label import Mapper
 
 inkmlpath = 'train'
-imgpath = 'img09'
+imgpath = 'imgall'
 listfile = open(join(imgpath, 'listfile.txt'), 'w')
 img_x = 28
 img_y = 28
@@ -47,8 +47,6 @@ for f in [f for f in listdir(inkmlpath) if isfile(join(inkmlpath, f))]:
             sym.append(tmp)
 
     for i in xrange(len(sym)):
-        if not tex[i].isdigit():
-            continue
         traceref = sym[i]
         min_x = max_x = coord[sym[i][0]][0][0]
         min_y = max_y = coord[sym[i][0]][0][1]
@@ -60,7 +58,7 @@ for f in [f for f in listdir(inkmlpath) if isfile(join(inkmlpath, f))]:
                 max_y = max(max_y, y)
         # pass one point trace
         if min_x == max_x and min_y == max_y:
-            break
+            continue
         # prevent divide-by-zero
         if min_x == max_x:
             max_x = max_x + 1

@@ -26,5 +26,6 @@ class Mapper:
         return self.syms[label]
 
 if __name__ == '__main__':
-    a = Mapper('texsyms.txt')
-    print a.inv
+    syms = Mapper('texsyms.txt').syms
+    for i in xrange(len(syms)):
+        print i, syms[i]
