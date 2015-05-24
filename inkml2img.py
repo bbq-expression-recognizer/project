@@ -5,10 +5,11 @@ from os.path import isfile, join
 from tex2label import Mapper
 
 inkmlpath = 'train'
-imgpath = 'img'
+imgpath = 'img09'
 listfile = open(join(imgpath, 'listfile.txt'), 'w')
-img_x = 32
-img_y = 32
+img_x = 28
+img_y = 28
+margin = 4
 density = 32
 mapper = Mapper('texsyms.txt')
 for f in [f for f in listdir(inkmlpath) if isfile(join(inkmlpath, f))]:
@@ -46,9 +47,11 @@ for f in [f for f in listdir(inkmlpath) if isfile(join(inkmlpath, f))]:
             sym.append(tmp)
 
     for i in xrange(len(sym)):
+        if not tex[i].isdigit():
+            continue
         traceref = sym[i]
-        min_x = min_y = 987654321
-        max_x = max_y = 0
+        min_x = max_x = coord[sym[i][0]][0][0]
+        min_y = max_y = coord[sym[i][0]][0][1]
         for j in traceref:
             for x, y in coord[j]:
                 min_x = min(min_x, x)
@@ -87,8 +90,8 @@ for f in [f for f in listdir(inkmlpath) if isfile(join(inkmlpath, f))]:
                 for t in xrange(density):
                     x = prevx + (nextx - prevx) * t / density
                     y = prevy + (nexty - prevy) * t / density
-                    mx = (x - min_x) / (max_x - min_x) * (img_x - 1)
-                    my = (y - min_y) / (max_y - min_y) * (img_y - 1)
+                    mx = (x - min_x) / (max_x - min_x) * (img_x - 2 * margin) + margin
+                    my = (y - min_y) / (max_y - min_y) * (img_y - 2 * margin) + margin
                     px[round(mx), round(my)] = 0
         imgname = f.rstrip('.inkml') + '_%d.png' % i
         img.save(join(imgpath, imgname))
