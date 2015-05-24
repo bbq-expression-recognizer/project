@@ -20,6 +20,8 @@ class Mapper:
             self.inv[self.syms[i]] = i
 
     def tex2label(self, sym):
+        if not sym in self.inv:
+            return None
         return self.inv[sym]
 
     def label2tex(self, label):
