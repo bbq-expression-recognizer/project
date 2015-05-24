@@ -4,8 +4,19 @@ from os import listdir
 from os.path import isfile, join
 from tex2label import Mapper
 
-inkmlpath = 'inkml'
-imgpath = 'imgall'
+import sys
+
+inkmlpath = 'inkml-test'
+imgpath = 'imgall-test'
+
+# from argument
+if len(sys.argv) == 3:
+    inkmlpath = sys.argv[1]
+    imgpath = sys.argv[2]
+
+print "from: ", inkmlpath
+print "to: ", imgpath
+
 listfile = open(join(imgpath, 'listfile.txt'), 'w')
 img_x = 28
 img_y = 28
@@ -44,7 +55,8 @@ for f in [f for f in listdir(inkmlpath) if isfile(join(inkmlpath, f))]:
                     tmp.append(int(child.get('traceDataRef')))
                 if child.tag.endswith('annotation'):
                     tex.append(child.text)
-            sym.append(tmp)
+            if len(tmp) > 0:
+                sym.append(tmp)
 
     for i in xrange(len(sym)):
         if mapper.tex2label(tex[i]) is None:
