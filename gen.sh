@@ -26,6 +26,9 @@ echo "using $1"
 
 mkdir "$1-png"
 python inkml2img.py "$1" "$1-png"
+if [ $? -ne 0 ]; then
+	exit 1
+fi
 
 $CAFFE_ROOT/build/tools/convert_imageset -gray "$1"-png/ "$1"-png/listfile.txt "$2"
 

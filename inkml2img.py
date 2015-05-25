@@ -1,4 +1,7 @@
 from PIL import Image
+import math
+from scipy import ndimage
+import numpy as np
 import xml.etree.ElementTree as ET
 from os import listdir
 from os.path import isfile, join
@@ -18,15 +21,19 @@ print "from: ", inkmlpath
 print "to: ", imgpath
 
 listfile = open(join(imgpath, 'listfile.txt'), 'w')
-img_x = 28
-img_y = 28
-margin = 4
-density = 32
+img_x = 28*2
+img_y = 28*2
+margin = 4*2
+density = 32*2
+final_width = 28
+final_height = 28
 mapper = Mapper('texsyms.txt')
-for f in [f for f in listdir(inkmlpath) if isfile(join(inkmlpath, f))]:
+
+files = [f for f in listdir(inkmlpath) if isfile(join(inkmlpath, f))]
+for file_index, f in enumerate(files):
     if not f.endswith('.inkml'):
         continue
-    print 'Processing', f, '...'
+    print 'Processing', f, '...', ('(%d / %d)' % (file_index, len(files) ))
 
     # find traces and trace groups
     tree = ET.parse(join(inkmlpath, f))
@@ -91,21 +98,25 @@ for f in [f for f in listdir(inkmlpath) if isfile(join(inkmlpath, f))]:
             max_y = my + dy / x_scale * y_scale
             min_y = my - dy / x_scale * y_scale
 
-        img = Image.new('L', (img_x, img_y), 255)
-        px = img.load()
-        for j in traceref:
-            for k in xrange(1, len(coord[j])):
-                prevx = coord[j][k - 1][0]
-                prevy = coord[j][k - 1][1]
-                nextx = coord[j][k][0]
-                nexty = coord[j][k][1]
-                for t in xrange(density):
-                    x = prevx + (nextx - prevx) * t / density
-                    y = prevy + (nexty - prevy) * t / density
-                    mx = (x - min_x) / (max_x - min_x) * (img_x - 2 * margin) + margin
-                    my = (y - min_y) / (max_y - min_y) * (img_y - 2 * margin) + margin
-                    px[round(mx), round(my)] = 0
-        imgname = str(mapper.tex2label(tex[i])) + "_" + f.rstrip('.inkml') + '_%d.png' % i
-        img.save(join(imgpath, imgname))
-        listfile.write(imgname + ' ' + str(mapper.tex2label(tex[i])) + '\n')
+        sval=[1,2,3,5]
+        for strength in xrange(0, 4):
+            px = np.full((img_y, img_x), 255, dtype=np.uint8)
+            for j in traceref:
+                for k in xrange(1, len(coord[j])):
+                    prevx = coord[j][k - 1][0]
+                    prevy = coord[j][k - 1][1]
+                    nextx = coord[j][k][0]
+                    nexty = coord[j][k][1]
+                    density = int(round(math.hypot(prevx - nextx, prevy - nexty)*2))
+                    for t in xrange(density):
+                        x = prevx + (nextx - prevx) * t / density
+                        y = prevy + (nexty - prevy) * t / density
+                        mx = (x - min_x) / (max_x - min_x) * (img_x - 2 * margin) + margin
+                        my = (y - min_y) / (max_y - min_y) * (img_y - 2 * margin) + margin
+                        px[round(my), round(mx)] = 0
+
+            img = Image.fromarray(ndimage.grey_erosion(px, size=(sval[strength],sval[strength])))
+            imgname = str(mapper.tex2label(tex[i])) + "_" + f.rstrip('.inkml') + '_%d_%d.png' % (i, strength)
+            img.resize((final_width, final_height),Image.BICUBIC).save(join(imgpath, imgname))
+            listfile.write(imgname + ' ' + str(mapper.tex2label(tex[i])) + '\n')
 listfile.close()
