@@ -107,7 +107,7 @@ for file_index, f in enumerate(files):
                     prevy = coord[j][k - 1][1]
                     nextx = coord[j][k][0]
                     nexty = coord[j][k][1]
-                    density = int(round(math.hypot(prevx - nextx, prevy - nexty)*2))
+                    density = int(round(math.hypot(prevx - nextx, prevy - nexty)*2*(img_x-2*margin)/(max_x-min_x)))
                     for t in xrange(density):
                         x = prevx + (nextx - prevx) * t / density
                         y = prevy + (nexty - prevy) * t / density
